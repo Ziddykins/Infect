@@ -1,0 +1,56 @@
+The town starts with one soldier, ten doctors and three infected.
+Everything except blank spaces and bodies get to take an action, and
+that action is in a random direction (N, W, S, E).
+
+After all units have taken an action, the move function is called
+where the unit again picks a random direction. If the direction which
+they picked is open, they move to it.
+
+Infected action (75% chance to do nothing):
+If action is towards a citizen:
+-->Citizen is infected
+If action is towards a doctor/nurse:
+-->25% chance doctor/nurse dies
+-->25% chance infected dies
+-->5% chance infected converted to nurse
+-->25% chance doctor/nurse converted to infected
+-->5% chance infected is healed to citizen
+-->5% chance infected healed to soldier
+-->10% chance they both die.
+
+Doctor actions:
+-->7% chance to convert citizen or infected to nurse
+-->1% chance to revive a dead person back to a citizen
+
+Nurse actions:
+-->3% chance to convert citizen or infected to nurse
+(I saw your post after whoever saved the thread, and I
+agree that infected should be trained into citizens
+before being trained into doctors. This will be fixed.)
+
+
+Citizen action (98% chance to do nothing):
+-->1% chance to become doctor (get his shit together)
+-->1% chance to become infected (airborne apparently)
+-->15% chance to build a wall. Walls discussed more at the end.
+
+Soldier action:
+Picks a random spot in a 2x3 radius from itself.
+If a citizen is in the 2x3 radius, do not shoot
+If there is no infected in their radius, do not shoot (!!NOT ADDED YET!!)
+
+It has a 25% to perform its action, its action depending on what is picked.
+If it picks a doctor or a nuse:
+-->1% chance the doctor/nurse is killed :(
+If it picks an infected:
+-->infected dies
+If it picks a body:
+-->body is cleaned up (empty space)
+If it picks a citizen:
+-->20% chance to convert citizen into oldier
+
+Walls:
+After 100 days, citizens can build walls. The town has a limited supply
+of wood (5000 currently). Each wall takes between 1 and 25 wood to build
+once out of wood, there is no getting more (yet?). Currently the building
+AI is absolutely terrible especially since they move each turn.
