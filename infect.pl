@@ -88,12 +88,13 @@ if (!$slow and !$fast and !$fastest) {
 #Load the map and check for characters we don't recognize
 if ($mapfile) {
     open(my $fh, '<', 'map.vrs') or die "Can't open file $mapfile for reading\n";
+    $citizens = 0; $infected = 0; $doctors = 0; $nurses = 0; $soldiers = 0;
     while (my $line = <$fh>) {
         chomp($line);
         $len = length($line);
         my @temp = split(//, $line);
         foreach my $let (@temp) {
-            if ($let !~ /[IOWDNXS]/) {
+            if ($let !~ /[IOWDNXS ]/) {
                 die "Invalid characters in map file\n";
             } else {
                 if ($let eq "I") {
