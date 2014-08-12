@@ -3,10 +3,15 @@
 use warnings; use strict;
 use Getopt::Long;
 
-my ($ysize, $xsize, $mapfile);
+my ($ysize, $xsize, $mapfile,
+    $slow, $fast, $fastest);
+
 GetOptions ("x=s" => \$xsize,
             "y=s" => \$ysize,
-            "map=s" => \$mapfile);
+            "map=s" => \$mapfile,
+            "slow" => \$slow,
+            "fast" => \$fast,
+            "fastest" => \$fastest);
 my @grid;
 my $len;
 my $days     = 0;
@@ -22,17 +27,32 @@ my $nurses   = 0;
 my $ff       = 0;
 my $wood     = 5500;
 my $timeout  = 200000;
+$SIG{INT}    = \&interrupt;
 
+#No map arguments?
 if (!$xsize and !$ysize and !$mapfile) { &help; }
-###Option handling###
+
+#User tries to supply map and map size?
 if ($mapfile and $ysize or $mapfile and $xsize) {
     die "Can't specify size and map\n";
 }
 
+#Forgot x or y?
 if ($xsize and !$ysize or $ysize and !$xsize) {
     die "Missing pair coordinate\n";
 }
 
+#Multiple speeds set?
+if ($slow and $fast or $slow and $fastest) { die "Select one speed\n"; }
+if ($fast and $slow or $fast and $fastest) { die "Select one speed\n"; }
+if ($fastest and $slow or $fastest and $fast) { die "Select one speed\n"; }
+
+#If no speed is set, only show results at the end
+if (!$slow and !$fast and !$fastest) {
+    print "No speed selected, only displaying results\n";
+}
+
+#Load the map and check for characters we don't recognize
 if ($mapfile) {
     open(my $fh, '<', 'map.vrs') or die "Can't open file $mapfile for reading\n";
     while (my $line = <$fh>) {
@@ -322,12 +342,12 @@ while (1) {
                     }
                 }
             }
+            if ($slow) { &printmap; }
         }
+        if ($fast) { &printmap; }
     }
     &move;
-    #If you only want the output to be displayed at the end, as
-    #I know it can be pretty flickery, comment the printmap below.
-    &printmap;
+    if ($fastest) { &printmap; }
 }
 
 sub move {
@@ -428,4 +448,9 @@ sub help {
     print "--map <str>\t\tSpecify a file to read from containing a map\n";
     print "--x <int>\t\tUse in conjunction with --y <int> to specify dimensions of auto-generated map\n";
     die;
+}
+
+sub interrupt {
+    print "\033[2J\033[1;1H\n";
+    die "Simulation interrupted by user";
 }
