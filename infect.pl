@@ -447,6 +447,10 @@ sub sdir {
 sub help {
     print "--map <str>\t\tSpecify a file to read from containing a map\n";
     print "--x <int>\t\tUse in conjunction with --y <int> to specify dimensions of auto-generated map\n";
+    print "--y <int>\t\tSee above\n";
+    print "--slow\t\t\tRun the simulation with slow speed. Very slow.\n";
+    print "--fast\t\t\tRun the simulation with fast speed. Almost real-time!\n";
+    print "--fastest\t\tRun the simulation at fastest speed.\n";
     die;
 }
 
