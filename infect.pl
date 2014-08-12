@@ -4,34 +4,66 @@ use warnings; use strict;
 use Getopt::Long;
 
 my ($ysize, $xsize, $mapfile,
-    $slow, $fast, $fastest);
+	$slow, $fast, $fastest,
+	$doctors, $infected, $soldiers, $nurses,
+	$wood, $help);
 
 GetOptions ("x=s" => \$xsize,
-            "y=s" => \$ysize,
-            "map=s" => \$mapfile,
-            "slow" => \$slow,
-            "fast" => \$fast,
-            "fastest" => \$fastest);
+			"y=s" => \$ysize,
+			"map=s" => \$mapfile,
+			"d=s" => \$doctors,
+			"i=s" => \$infected,
+			"s=s" => \$soldiers,
+			"n=s" => \$nurses,
+			"w=s" => \$wood,
+			"slow" => \$slow,
+			"fast" => \$fast,
+			"fastest" => \$fastest,
+			"h" => \$help,
+			"help" => \$help);
+
+#display help
+if ($help) { &help; }
+
+#No map arguments? use default values
+if (!$xsize and !$ysize and !$mapfile) { 
+	$xsize = 50;
+	$ysize = 100;
+}
+
+
 my @grid;
 my $len;
-my $days     = 0;
-my $doctors  = 0;
-my $infected = 0;
-my $dead     = 0;
+my $days	= 0;
+my $dead	= 0;
+my $gen		= 0;
+my $count	= 0;
+my $disp	= 1;
+my $ff		= 0;
+my $total	= 0;
+my $timeout	= 200000;
+
+if (!$wood) {
+	$wood = $xsize * $ysize * 0.5;
+}
+#if not defined, set initial value for doctors, infected, soldiers and nurses
+if (!$doctors and !$mapfile) {
+	$doctors  = $xsize * $ysize * 0.05;
+}
+if (!$infected and !$mapfile) {
+	$infected = $xsize * $ysize * 0.1;
+}
+if (!$soldiers and !$mapfile) {
+	$soldiers = $xsize * $ysize * 0.05;
+}
+if (!$nurses and !$mapfile) {
+	$nurses = $xsize * $ysize * 0.1;
+}
+
+
 my $citizens = 0;
-my $gen      = 0;
-my $count    = 0;
-my $soldiers = 0;
-my $disp     = 1;
-my $nurses   = 0;
-my $ff       = 0;
-my $total    = 0;
-my $wood     = 5500;
-my $timeout  = 200000;
 $SIG{INT}    = \&interrupt;
 
-#No map arguments?
-if (!$xsize and !$ysize and !$mapfile) { &help; }
 
 #User tries to supply map and map size?
 if ($mapfile and $ysize or $mapfile and $xsize) {
@@ -82,29 +114,54 @@ if ($mapfile) {
 
 #Generate the grid
 if ($xsize and $ysize) {
-    for(my $i=0; $i<$xsize; $i++) {
-        for(my $j=0; $j<$ysize; $j++) {
-            $grid[$i][$j] = "O"; $citizens++;
-            $total++;
-        }
-    }
-    #Assign the units to random locations within the array constraints
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
-    $citizens -= 14; $infected += 3; $soldiers += 1; $doctors += 10;
+	for(my $i=0; $i<$xsize; $i++) {
+		for(my $j=0; $j<$ysize; $j++) {
+			$grid[$i][$j] = "O"; $citizens++;
+			$total++;
+		}
+	}
+	my $tmpinfected = $infected;
+	while ($tmpinfected > 0){
+		my $x = int(rand(scalar(@grid)-1));
+		my $y = int(rand(scalar(@grid)*2-1));
+		if($grid[$x][$y] eq "O"){
+			$grid[$x][$y] = "I";
+			$tmpinfected--;
+			$citizens--;
+		}
+	}
+	my $tmpdoctors = $doctors;
+	while ($tmpdoctors > 0){
+		my $x = int(rand(scalar(@grid)-1));
+		my $y = int(rand(scalar(@grid)*2-1));
+		if($grid[$x][$y] eq "O"){
+			$grid[$x][$y] = "D";
+			$tmpdoctors--;
+			$citizens--;
+		}
+	}
+	my $tmpnurses = $nurses;
+	while ($tmpnurses > 0){
+		my $x = int(rand(scalar(@grid)-1));
+		my $y = int(rand(scalar(@grid)*2-1));
+		if($grid[$x][$y] eq "O"){
+			$grid[$x][$y] = "D";
+			$tmpnurses--;
+			$citizens--;
+		}
+	}
+	my $tmpsoldiers = $soldiers;
+	while ($tmpsoldiers > 0){
+		my $x = int(rand(scalar(@grid)-1));
+		my $y = int(rand(scalar(@grid)*2-1));
+		if($grid[$x][$y] eq "O"){
+			$grid[$x][$y] = "D";
+			$tmpsoldiers--;
+			$citizens--;
+		}
+	}
 }
+
 
 #Uncomment and comment above to manually set locations.
 #maybe command line arguments like a normal person? hint hint
@@ -435,9 +492,10 @@ sub win {
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
           "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
-    print "Press any key to end... ";
+    print "Enter to end... ";
     my $bye = <STDIN>;
-    die "Simulation ended";
+    print "Simulation ended\n";
+    exit(0);
 }
 
 sub sdir {
@@ -464,7 +522,13 @@ sub help {
     print "--slow\t\t\tRun the simulation with slow speed. Very slow.\n";
     print "--fast\t\t\tRun the simulation with fast speed. Almost real-time!\n";
     print "--fastest\t\tRun the simulation at fastest speed.\n";
-    die;
+    print "--d <int>\t\tSpecify the initial number of doctors\n";
+	print "--i <int>\t\tSpecify the initial number of infected\n";
+    print "--n <int>\t\tSpecify the initial number of nurses\n";
+    print "--s <int>\t\tSpecify the initial number of soldiers\n";
+    print "--w <int>\t\tSpecify initially available wood\n";
+    print "--h or --help\t\tDisplay this message\n";
+    exit(0);
 }
 sub interrupt {
     print "\033[2J\033[1;1H\n";
