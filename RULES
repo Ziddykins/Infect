@@ -37,11 +37,12 @@ Citizen action (98% chance to do nothing):
 Soldier action:
 Picks a random spot in a 2x3 radius from itself.
 If a citizen is in the 2x3 radius, do not shoot
-If there is no infected in their radius, do not shoot (!!NOT ADDED YET!!)
 
 It has a 25% to perform its action, its action depending on what is picked.
-If it picks a doctor or a nuse:
--->1% chance the doctor/nurse is killed :(
+If it picks a doctor or a nurse:
+-->If the action was one which causes death to the nurse/doctor, the
+-->soldier rolls again. If death is chosen again, the doctor/nurse dies.
+-->There is a 2:200 chance death will be picked twice.
 If it picks an infected:
 -->infected dies
 If it picks a body:
