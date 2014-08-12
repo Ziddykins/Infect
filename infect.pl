@@ -6,7 +6,7 @@ use Getopt::Long;
 my ($ysize, $xsize, $mapfile,
 	$slow, $fast, $fastest,
 	$doctors, $infected, $soldiers, $nurses,
-	$wood, $help);
+	$wood, $help, $quiet);
 
 GetOptions ("x=s" => \$xsize,
 			"y=s" => \$ysize,
@@ -20,7 +20,9 @@ GetOptions ("x=s" => \$xsize,
 			"fast" => \$fast,
 			"fastest" => \$fastest,
 			"h" => \$help,
-			"help" => \$help);
+			"help" => \$help,
+			"q" => \$quiet,
+			"quiet" => \$quiet);
 
 #display help
 if ($help) { &help; }
@@ -48,16 +50,16 @@ if (!$wood and !$mapfile) {
 }
 #if not defined, set initial value for doctors, infected, soldiers and nurses
 if (!$doctors and !$mapfile) {
-	$doctors  = int($xsize * $ysize * 0.05);
+	$doctors  = int($xsize * $ysize * 0.01)+1;
 }
 if (!$infected and !$mapfile) {
-	$infected = int($xsize * $ysize * 0.1);
+	$infected = int($xsize * $ysize * 0.01)+1;
 }
 if (!$soldiers and !$mapfile) {
-	$soldiers = int($xsize * $ysize * 0.05);
+	$soldiers = int($xsize * $ysize * 0.02)+1;
 }
 if (!$nurses and !$mapfile) {
-	$nurses = int($xsize * $ysize * 0.1);
+	$nurses = int($xsize * $ysize * 0.05)+1;
 }
 
 
@@ -81,7 +83,7 @@ if ($fast and $slow or $fast and $fastest) { die "Select one speed\n"; }
 if ($fastest and $slow or $fastest and $fast) { die "Select one speed\n"; }
 
 #If no speed is set, only show results at the end
-if (!$slow and !$fast and !$fastest) {
+if (!$slow and !$fast and !$fastest and !$quiet) {
     print "No speed selected, only displaying results\n";
 }
 
@@ -215,8 +217,8 @@ while (1) {
 			}
 		}
 	}
-	if ($infected >= ($citizens + $nurses + $doctors + $soldiers)*2) { win(0); }
-	if ($soldiers >= ($citizens + $nurses + $doctors) and $soldiers >= $infected) { win(3); } 
+	if ($infected >= ($citizens + $nurses + $doctors + $soldiers)*3) { win(0); }
+	if ($soldiers >= ($citizens + $nurses + $doctors)*1.5 and $soldiers >= $infected) { win(3); } 
 	if ($count >= $timeout) { win(1); }
 	if ($infected == 0) {
 		win(2);
@@ -246,7 +248,7 @@ while (1) {
 				infected($i, $j, $chance, $doctor);				
 			#soldiers move
 			} elsif ($grid[$i][$j] eq "S") {
-				soldier($i,$j, $chance,$doctor);
+				soldier($i,$j, $chance, $doctor);
 			}
 			if ($slow) { &printmap; }
 		}
@@ -260,39 +262,39 @@ sub medical {
 	my $ci = $i;
 	my $cj = $j;
 	my $dir	= int(rand(4));
-		($ci, $cj) = sdir($ci, $cj, $dir);
-		my $let	= $grid[$ci][$cj];
-		my $which  = $grid[$i][$j];
-		if (defined($let)) {
-			#Miraculous revival
-			if ($doctor == 0 and $let eq "X") {
-				$grid[$ci][$cj] = "O";
-				$dead--; $citizens++;
-				$count = 0;
-			}
-			#nurse heals infected
-			elsif ($which eq "N" and $doctor <= 10 and $let eq "I") {
-				$infected--; $citizens++;
-				$grid[$ci][$cj] = "O";
-			#doctor teaches	
-			} elsif ($which eq "D" and $doctor <= 8) {
-				if ($let eq "O") {
-					$citizens--; $nurses++;
-					$grid[$ci][$cj] = "N";
-				}
-				if ($let eq "N" and int(rand(2)) == 1) {
-					$nurses--; $doctors++;
-					$grid[$ci][$cj] = "D";
-				}
-			#doctor heals infected
-			} elsif ($doctor <= 25) {
-				if ($let eq "I") {
-					$infected--; $citizens++;
-					$grid[$ci][$cj] = "O";
-				}
-			}
+	($ci, $cj) = sdir($ci, $cj, $dir);
+	my $let	= $grid[$ci][$cj];
+	my $which  = $grid[$i][$j];
+	if (defined($let)) {
+		#Miraculous revival
+		if ($doctor == 0 and $let eq "X") {
+			$grid[$ci][$cj] = "O";
+			$dead--; $citizens++;
 			$count = 0;
 		}
+		#nurse heals infected
+		elsif ($which eq "N" and $doctor <= 20 and $let eq "I") {
+			$infected--; $citizens++;
+			$grid[$ci][$cj] = "O";
+		#doctor teaches	
+		} elsif ($which eq "D" and $doctor <= 20) {
+			if ($let eq "O") {
+				$citizens--; $nurses++;
+				$grid[$ci][$cj] = "N";
+			}
+			if ($let eq "N" and int(rand(2)) == 1) {
+				$nurses--; $doctors++;
+				$grid[$ci][$cj] = "D";
+			}
+		#doctor heals infected
+		} elsif ($doctor <= 25) {
+			if ($let eq "I") {
+				$infected--; $citizens++;
+				$grid[$ci][$cj] = "O";
+			}
+		}
+		$count = 0;
+	}
 }
 
 sub citizen {
@@ -329,7 +331,7 @@ sub infected {
 	my $cj = $j;
 	#infections can happen in all directions around the infected
 	for( my $dir = 0; $dir < 4; $dir++) {
-		if ($chance >= 95) {
+		if ($chance > 95) {
 			($ci, $cj) = sdir($ci, $cj, $dir);
 			if (defined($grid[$ci][$cj])) {
 				#infect citizens
@@ -536,27 +538,38 @@ sub printmap {
 }
 
 sub win {
-    my $result;
-    #Was the function told we won? How?
-    if ($_[0] == 2) {
-		$result = "for the infection to be eliminated\n";
-	} elsif ($_[0] == 1) {
-		$result = "for the infection to be contained\n";
-    } elsif ($_[0] == 3) {
-		$result = "for a military dictatorship to be established\n";
+    if(!$quiet){
+	    my $result;
+	    #Was the function told we won? How?
+	    if ($_[0] == 2) {
+			$result = "for the infection to be eliminated\n";
+		} elsif ($_[0] == 1) {
+			$result = "for the infection to be contained\n";
+	    } elsif ($_[0] == 3) {
+			$result = "for a military dictatorship to be established\n";
+		} else {
+		$result = "for the world to descend into chaos\n";
+	    }
+	    print "\033[2J\033[1;1H";
+	    &printmap;
+	    print "It only took " . $days . " days $result";
+	    print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
+		  "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
+		  " $ff) - Day: $days\n";
+	    print "Enter to end... ";
+	    my $bye = <STDIN>;
+	    print "Simulation ended\n";
+	    exit(0);
+    } else {
+	if ($_[0] == 1 || $_[0] == 2){
+		print "citizens win\n";
+	} elsif ($_[0] == 3) {
+		print "military wins\n";
 	} else {
-        $result = "for the world to descend into chaos\n";
+		print "virus wins\n";
+	}
+	exit(0);
     }
-    print "\033[2J\033[1;1H";
-    &printmap;
-    print "It only took " . $days . " days $result";
-    print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
-          "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
-          " $ff) - Day: $days\n";
-    print "Enter to end... ";
-    my $bye = <STDIN>;
-    print "Simulation ended\n";
-    exit(0);
 }
 
 sub sdir {
