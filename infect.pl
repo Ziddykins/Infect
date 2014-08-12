@@ -26,20 +26,20 @@ for(my $i=0; $i<50; $i++) {
 }
 
 #Assign the units to random locations within the array constraints
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "I";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "I";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "I";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "D";
-$grid[int(rand(scalar(@grid)))][int(rand(scalar(@grid)*2))] = "S";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
 
 #Uncomment and comment above to manually set locations.
 #maybe command line arguments like a normal person? hint hint
