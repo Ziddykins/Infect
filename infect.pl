@@ -112,12 +112,12 @@ while (1) {
                                 $dead++; $infected--;
                                 $count = 0;
                             } elsif ($doctor <= 55) {
-                                #infected converted into nurse
+                                #infected converted into a qt nurse
                                 $grid[$i][$j] = "N";
                                 $nurses++; $infected--;
                                 $count = 0;
                             } elsif ($doctor <= 80) {
-                                #doctor/nurse converted into infected
+                                #doctor/qt nurse converted into infected
                                 $grid[$ci][$cj] = "I";
                                 $infected++;
                                 if ($which eq "D") {
@@ -138,7 +138,7 @@ while (1) {
                                 $soldiers++;
                                 $count = 0;
                             } elsif ($doctor <= 100) {
-                                #both doctor/nurse and infected die
+                                #both doctor/qt nurse and infected die
                                 $grid[$i][$j]   = "X";
                                 $grid[$ci][$cj] = "X";
                                 $infected--;
@@ -263,7 +263,7 @@ while (1) {
                                 $citizens--; $soldiers++;
                                 $count = 0;
                             }
-                        #Doctor or nurse is a victim of friendly 
+                        #Doctor or qt nurse is a victim of friendly 
                         #fire amidst the chaos
                         } elsif ($grid[$ci][$cj] eq "D" or $grid[$ci][$cj] eq "N") {
                             if ($rchance <= 1) {
@@ -368,7 +368,7 @@ sub win {
     }
     print "It only took " . $days . " days $result";
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
-          "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
+          "qtNurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
     die "Simulation ended";
 }
