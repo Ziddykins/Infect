@@ -374,9 +374,7 @@ sub win {
 }
 
 sub sdir {
-    my $ci = $_[0];
-    my $cj = $_[1];
-    my $dir = $_[2];
+    my ($ci, $cj, $dir) = @_;
     if ($dir == 0) {
         $ci++;
     } elsif ($dir == 1) {
