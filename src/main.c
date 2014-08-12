@@ -65,8 +65,10 @@ void generateCoord(Board board[][X], const int count, Characters type, Probabili
 void initialise(Board board[][X], Probabilities probabilities);
 void defaultBoard(Board board[][X], Probabilities probabilities);
 void displayBoard(Board board[][X], int days);
-void getMoves(Board board[][X], Probabilities probabilities);
-void processMoves(Board board[][X], Probabilities probabilities);
+void getActions(Board board[][X], Probabilities probabilities);
+Board * getDelta(Board board[][X], int y, int x);
+void getMoves(Board board[][X]);
+void processActions(Board board[][X], Probabilities probabilities);
 void checkTarget(Board board[][X], int y, int x, action getAction);
 void getActionInf(Board *infected, Board *target);
 void getActionDoc(Board *doctor, Board *target);
@@ -104,8 +106,9 @@ int main (int argc, char **argv)
 			sleep(1);
 		}
 		//printf("\n\n");
-		getMoves(board, probabilities);
-		processMoves(board, probabilities);
+		getActions(board, probabilities);
+		processActions(board, probabilities);
+		getMoves(board);
 		++days;
 	} while (days < 1000);	
 	
@@ -122,11 +125,13 @@ void initialise(Board board[][X], Probabilities probabilities)
 	generateCoord(board, countD, DOC, probabilities);
 }
 
-void processMoves(Board board[][X], Probabilities probabilities)
+void processActions(Board board[][X], Probabilities probabilities)
 {
 	for (size_t i = 0; i < Y; i++) {
 		for (size_t j = 0; j < X; j++) {
 			switch (board[i][j].action) {
+				case NOTHING:
+					break;
 				case DIE:
 					board[i][j].character = DEAD;
 					board[i][j].probabilities = NULL;
@@ -167,12 +172,41 @@ void processMoves(Board board[][X], Probabilities probabilities)
 	}
 }
 
-void getMoves(Board board[][X], Probabilities probabilities) 
+void getMoves(Board board[][X])
+{
+	for (size_t i = 0; i < Y; i++) {
+		for (size_t j = 0; j < X; j++) {
+			switch (board[i][j].character) {
+				case INF:
+				case DOC:
+				case CIT:
+				case SOL:
+					board[i][j].direction = rand()%4;
+					if (!checkOutBounds(board, board[i][j].direction, i, j)) {
+						Board *target = getDelta(board, i, j);
+						if (target->character == EMPTY) {
+							target->character = board[i][j].character;
+							board[i][j].character = EMPTY;
+						}
+					}
+					break;
+				case DEAD:
+				case EMPTY:
+					break;
+			}
+		}
+	}
+}
+
+void getActions(Board board[][X], Probabilities probabilities) 
 {
 	for (size_t i = 0; i < Y; i++) {
 		for (size_t j = 0; j < X; j++) {
 			board[i][j].direction = rand()%4; 
 			switch (board[i][j].character) {
+				case DEAD: //fallthrough
+				case EMPTY:
+					break;
 				case INF:
 					if (rand()%100 >= 75 && !checkOutBounds(board, board[i][j].direction, i, j)) { 
 						checkTarget(board, i, j, getActionInf);
@@ -198,20 +232,29 @@ void getMoves(Board board[][X], Probabilities probabilities)
 	}
 }
 
-void checkTarget(Board board[][X], int y, int x, action getAction)
+Board * getDelta(Board board[][X], int y, int x)
 {
-	Board *target, *attacker;
-	
-	attacker = &board[y][x];	
-	Deltas delta = board[y][x].direction == NORTH ? N : board[y][x].direction == SOUTH ? S : board[y][x].direction == WEST ? W : E;
+	Board *attacker = &board[y][x];
+	Board *target = malloc(sizeof(Board));	
+	Deltas delta = attacker->direction == NORTH ? N : attacker->direction == SOUTH ? S : attacker->direction == WEST ? W : E;
 
 	if (attacker->direction == NORTH || attacker->direction == SOUTH) {
-		target = &board[y + delta][x];		
+		target = &board[y + delta][x];
 	} else {
 		target = &board[y][x + delta];
 	}
 
-	getAction(attacker, target);
+	return target;
+
+} 
+
+void checkTarget(Board board[][X], int y, int x, action getAction)
+{
+	Board *target;
+	
+	target = getDelta(board, y, x);
+
+	getAction(&board[y][x], target);
 }
 
 void getActionInf(Board *infected,  Board *target)
@@ -251,7 +294,7 @@ void getActionDoc(Board *doctor, Board *target)
 		if (prob == 10) {
 			target->action = REVIVE;
 		}
-	}			
+	}
 }
 
 void getActionCit(Board *citizen, Board *target)
