@@ -43,7 +43,7 @@ my $ff		= 0;
 my $total	= 0;
 my $timeout	= 200000;
 
-if (!$wood) {
+if (!$wood and !$mapfile) {
 	$wood = $xsize * $ysize * 0.5;
 }
 #if not defined, set initial value for doctors, infected, soldiers and nurses
@@ -145,7 +145,7 @@ if ($xsize and $ysize) {
 		my $x = int(rand(scalar(@grid)-1));
 		my $y = int(rand(scalar(@grid)*2-1));
 		if($grid[$x][$y] eq "O"){
-			$grid[$x][$y] = "D";
+			$grid[$x][$y] = "N";
 			$tmpnurses--;
 			$citizens--;
 		}
@@ -155,7 +155,7 @@ if ($xsize and $ysize) {
 		my $x = int(rand(scalar(@grid)-1));
 		my $y = int(rand(scalar(@grid)*2-1));
 		if($grid[$x][$y] eq "O"){
-			$grid[$x][$y] = "D";
+			$grid[$x][$y] = "S";
 			$tmpsoldiers--;
 			$citizens--;
 		}
@@ -183,6 +183,7 @@ if ($xsize and $ysize) {
 if ($mapfile) {
     $xsize = scalar(@grid)-1;
     $ysize = $len-1;
+    $wood = $xsize * $ysize * 0.5;
 }
 
 while (1) {
