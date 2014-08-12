@@ -1,3 +1,18 @@
+****LEGEND****
+O = Healthy citizen (Green)
+N = Nurse (Yellow)
+D = Doctor (Cyan)
+W = Wall (green-on-green in some terminals)
+X = Corpse (White)
+I = Infected (Red)
+S = Soldier (Magenta)
+**************
+
+****EXAMPLE ARGUMENTS****
+perl infect.pl --fast --map map.vrs
+perl infect.pl --fastest --x 50 --y 100
+*************************
+
 The town starts with one soldier, ten doctors and three infected.
 Everything except blank spaces and bodies get to take an action, and
 that action is in a random direction (N, W, S, E).
