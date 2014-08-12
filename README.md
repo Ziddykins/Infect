@@ -2,6 +2,7 @@ Infect
 ======
 
 A game built by /g/, for /g/
+![alt text](http://oi62.tinypic.com/okvp0z.jpg "Infect")
 
 12/8/2014
 Source has been posted!
