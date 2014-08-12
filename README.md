@@ -1,0 +1,4 @@
+Infection
+=========
+
+Epidemic simulator
