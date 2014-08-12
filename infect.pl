@@ -48,16 +48,16 @@ if (!$wood and !$mapfile) {
 }
 #if not defined, set initial value for doctors, infected, soldiers and nurses
 if (!$doctors and !$mapfile) {
-	$doctors  = $xsize * $ysize * 0.05;
+	$doctors  = int($xsize * $ysize * 0.05);
 }
 if (!$infected and !$mapfile) {
-	$infected = $xsize * $ysize * 0.1;
+	$infected = int($xsize * $ysize * 0.1);
 }
 if (!$soldiers and !$mapfile) {
-	$soldiers = $xsize * $ysize * 0.05;
+	$soldiers = int($xsize * $ysize * 0.05);
 }
 if (!$nurses and !$mapfile) {
-	$nurses = $xsize * $ysize * 0.1;
+	$nurses = int($xsize * $ysize * 0.1);
 }
 
 
@@ -184,7 +184,7 @@ if ($xsize and $ysize) {
 if ($mapfile) {
     $xsize = scalar(@grid)-1;
     $ysize = $len-1;
-    $wood = $xsize * $ysize * 0.5;
+    $wood = int($xsize * $ysize * 0.5);
 }
 
 while (1) {
