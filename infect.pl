@@ -407,11 +407,7 @@ sub win {
     } else {
         $result = "for the world to descend into chaos\n";
     }
-
-    #The new method of clearing doesn't clear the entire screen.
-    #Rather than refresh each time, clear at end so the output
-    #isn't all messed up
-    system("clear");
+    print "\033[2J\033[1;1H";
     &printmap;
     print "It only took " . $days . " days $result";
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
