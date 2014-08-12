@@ -6,7 +6,7 @@ use Getopt::Long;
 my ($ysize, $xsize, $mapfile,
 	$slow, $fast, $fastest,
 	$doctors, $infected, $soldiers, $nurses,
-	$wood);
+	$wood, $help);
 
 GetOptions ("x=s" => \$xsize,
 			"y=s" => \$ysize,
@@ -18,7 +18,12 @@ GetOptions ("x=s" => \$xsize,
 			"w=s" => \$wood,
 			"slow" => \$slow,
 			"fast" => \$fast,
-			"fastest" => \$fastest);
+			"fastest" => \$fastest,
+			"h" => \$help,
+			"help" => \$help);
+
+#display help
+if ($help) { &help; }
 
 #No map arguments? use default values
 if (!$xsize and !$ysize and !$mapfile) { 
@@ -483,9 +488,10 @@ sub win {
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
           "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
-    print "Press any key to end... ";
+    print "Enter to end... ";
     my $bye = <STDIN>;
-    die "Simulation ended";
+    print "Simulation ended\n";
+    exit(0);
 }
 
 sub sdir {
@@ -517,7 +523,8 @@ sub help {
     print "--n <int>\t\tSpecify the initial number of nurses\n";
     print "--s <int>\t\tSpecify the initial number of soldiers\n";
     print "--w <int>\t\tSpecify initially available wood\n";
-    die;
+    print "--h or --help\t\tDisplay this message\n";
+    exit(0);
 }
 sub interrupt {
     print "\033[2J\033[1;1H\n";
