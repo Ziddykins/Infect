@@ -55,7 +55,7 @@ if (!$slow and !$fast and !$fastest) {
 
 #Load the map and check for characters we don't recognize
 if ($mapfile) {
-    open(my $fh, '<', 'map.vrs') or die "Can't open file $mapfile for reading\n";
+    open(my $fh, '<', "$mapfile") or die "Can't open file $mapfile for reading\n";
     while (my $line = <$fh>) {
         chomp($line);
         $len = length($line);
