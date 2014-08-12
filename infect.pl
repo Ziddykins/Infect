@@ -3,7 +3,14 @@
 use warnings; use strict;
 use Time::HiRes;
 use Term::ANSIColor qw(:constants);
+use Getopt::Long;
+
+my ($ysize, $xsize, $mapfile);
+GetOptions ("x=s" => \$xsize,
+            "y=s" => \$ysize,
+            "map=s" => \$mapfile);
 my @grid;
+my $len;
 my $days     = 0;
 my $doctors  = 10;
 my $infected = 3;
@@ -18,28 +25,54 @@ my $ff       = 0;
 my $wood     = 5500;
 my $timeout  = 200000;
 
-#Generate the grid
-for(my $i=0; $i<50; $i++) {
-    for(my $j=0; $j<100; $j++) {
-        $grid[$i][$j] = "O";
+if (!$xsize and !$ysize and !$mapfile) { &help; }
+###Option handling###
+if ($mapfile and $ysize or $mapfile and $xsize) {
+    die "Can't specify size and map\n";
+}
+
+if ($xsize and !$ysize or $ysize and !$xsize) {
+    die "Missing pair coordinate\n";
+}
+
+if ($mapfile) {
+    open(my $fh, '<', 'map.vrs') or die "Can't open file $mapfile for reading\n";
+    while (my $line = <$fh>) {
+        chomp($line);
+        $len = length($line);
+        my @temp = split(//, $line);
+        foreach my $let (@temp) {
+            if ($let !~ /[IOWDNXS]/) {
+                die "Invalid characters in map file\n";
+            }
+        }
+        push @grid, [ split(//, $line) ];
     }
 }
 
-#Assign the units to random locations within the array constraints
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-$grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
+#Generate the grid
+if ($xsize and $ysize) {
+    for(my $i=0; $i<$xsize; $i++) {
+        for(my $j=0; $j<$ysize; $j++) {
+            $grid[$i][$j] = "O";
+        }
+    }
+    #Assign the units to random locations within the array constraints
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
+    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
+}
 
 #Uncomment and comment above to manually set locations.
 #maybe command line arguments like a normal person? hint hint
@@ -57,6 +90,12 @@ $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
 #$grid[0][0] = "I";
 #$grid[1][0] = "I";
 
+#Get our dimensions if a map is supplied.
+if ($mapfile) {
+    $xsize = scalar(@grid);
+    $ysize = $len;
+}
+
 while (1) {
     $days++;
     if ($infected >= 4990) { win(0); }
@@ -64,8 +103,8 @@ while (1) {
 
     #If there's no infected, y'dun winned
     my $noin = 0;
-    for(my $n=0; $n<50; $n++) {
-        for(my $m=0; $m<100; $m++) {
+    for(my $n=0; $n<$xsize; $n++) {
+        for(my $m=0; $m<$ysize; $m++) {
             if (!grep(/I/, $grid[$n][$m])) {
                 $noin++;
             }
@@ -76,8 +115,8 @@ while (1) {
     }
     
     #Just keep iterating through the entire grid one by one
-    for(my $i=0; $i<50; $i++) {
-        for(my $j=0; $j<100; $j++) {
+    for(my $i=0; $i<$xsize; $i++) {
+        for(my $j=0; $j<$ysize; $j++) {
             my $chance = int(rand(101));
             my $doctor = int(rand(101));
             $count++;
@@ -231,7 +270,6 @@ while (1) {
                 if ($p2) { $cj += $r2; } else { $cj -= $r2; }
                 if(defined($grid[$ci][$cj])) {
                     my $which = $grid[$ci][$cj];
-                    #If it's a doctor or a nurse
                     if ($which =~ /[D|N]/ and $rchance <= 1) {
                         $rchance = int(rand(101));
                     }
@@ -295,8 +333,8 @@ while (1) {
 }
 
 sub move {
-    for(my $i=0; $i<50; $i++) {
-        for(my $j=0; $j<100; $j++) {
+    for(my $i=0; $i<$xsize; $i++) {
+        for(my $j=0; $j<$ysize; $j++) {
             #Each unit excluding walls and bodies move in a random direction
             #after they've completed their action (N/W/S/E)
             #Except for that one time when I forgot to include bodies.
@@ -323,9 +361,9 @@ sub printmap {
     $disp++;
     if ($disp >= 10 or $count >= $timeout or !$infected) {
         $disp  = 0;
-        system("clear");
-        for(my $i=0; $i<50; $i++) {
-           for(my $j=0; $j<100; $j++) {
+        print"\033[1;1H";
+        for(my $i=0; $i<$xsize; $i++) {
+           for(my $j=0; $j<$ysize; $j++) {
                 local $Term::ANSIColor::AUTORESET = 1;
                 if ($grid[$i][$j] eq "O") {
                     print BOLD GREEN $grid[$i][$j];
@@ -353,12 +391,11 @@ sub printmap {
             }
             print "\n", RESET;
         }
-        print "=" x 100 . "\n";
+        print "=" x $ysize . "\n";
     }
 }
 
 sub win {
-    &printmap;
     my $result;
     #Was the function told we won? How?
     if ($_[0] == 1) {
@@ -370,10 +407,18 @@ sub win {
     } else {
         $result = "for the world to descend into chaos\n";
     }
+
+    #The new method of clearing doesn't clear the entire screen.
+    #Rather than refresh each time, clear at end so the output
+    #isn't all messed up
+    system("clear");
+    &printmap;
     print "It only took " . $days . " days $result";
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
           "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
+    print "Press any key to end... ";
+    my $bye = <STDIN>;
     die "Simulation ended";
 }
 
@@ -392,4 +437,10 @@ sub sdir {
         $cj++;
     }
     return ($ci, $cj);
+}
+
+sub help {
+    print "--map <str>\t\tSpecify a file to read from containing a map\n";
+    print "--x <int>\t\tUse in conjunction with --y <int> to specify dimensions of auto-generated map\n";
+    die;
 }
