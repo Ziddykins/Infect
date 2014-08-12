@@ -211,6 +211,12 @@ while (1) {
             $count++;
             my $ci = $i;
             my $cj = $j;
+            
+            #the dead have a 1% chance to decay
+            if ($grid[$i][$j] eq "X" && $chance == 1) {
+				$grid[$i][$j] = " ";
+			}
+			
             if ($grid[$i][$j] eq "W" or $grid[$i][$j] eq "X") { next; }
             if ($grid[$i][$j] eq "I") {
                 if ($chance >= 75) {
