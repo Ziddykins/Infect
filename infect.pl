@@ -87,15 +87,7 @@ while (1) {
             if ($grid[$i][$j] eq "I") {
                 if ($chance >= 75) {
                     my $dir = int(rand(4));
-                    if ($dir == 0) {
-                        $ci++;
-                    } elsif ($dir == 1) {
-                        $cj--;
-                    } elsif ($dir == 2) {
-                        $ci--;
-                    } elsif ($dir == 3) {
-                        $cj++;
-                    }
+                    ($ci, $cj) = sdir($ci, $cj, $dir);
                     if (defined($grid[$ci][$cj])) {
                         if ($grid[$ci][$cj] eq "O") {
                             #citizen becomes infected
@@ -162,18 +154,10 @@ while (1) {
                 }
             } elsif ($grid[$i][$j] eq "D" or $grid[$i][$j] eq "N") {
                 my $doctor = int(rand(101));
-                my $dir = int(rand(4));
-                if ($dir == 0) {
-                    $ci++;
-                } elsif ($dir == 1) {
-                    $cj--;
-                } elsif ($dir == 2) {
-                    $ci--;
-                } elsif ($dir == 3) {
-                    $cj++;
-                }
-                my $let   = $grid[$ci][$cj];
-                my $which = $grid[$i][$j];
+                my $dir    = int(rand(4));
+                ($ci, $cj) = sdir($ci, $cj, $dir);
+                my $let    = $grid[$ci][$cj];
+                my $which  = $grid[$i][$j];
                 if (defined($let)) {
                     #Miraculous revival
                     if ($doctor == 0 and $let eq "X") {
@@ -219,15 +203,7 @@ while (1) {
                     $count = 0;
                 } elsif ($chance > 1 and $chance <= 16) {
                     my $dir = int(rand(4));
-                    if ($dir == 0) {
-                        $ci++;
-                    } elsif ($dir == 1) {
-                        $cj--;
-                    } elsif ($dir == 2) {
-                        $ci--;
-                    } elsif ($dir == 3) {
-                        $cj++;
-                    }
+                    ($ci, $cj) = sdir($ci, $cj, $dir);
                     #Can we build here? Do we have enough resources?
                     #Has enough time passed to take up carpentry?
                     if (defined($grid[$ci][$cj])) {
@@ -326,15 +302,7 @@ sub move {
             my $dir = int(rand(4));
             my $ci = $i;
             my $cj = $j;
-            if ($dir == 0) {
-                $ci++;
-            } elsif ($dir == 1) {
-                $cj--;
-            } elsif ($dir == 2) {
-                $ci--;
-            } elsif ($dir == 3) {
-                $cj++;
-            }
+            ($ci, $cj) = sdir($ci, $cj, $dir);
             #Politely switch spots with the open space
             if (defined($grid[$ci][$cj])) {
                 if ($grid[$ci][$cj] eq " ") {
@@ -403,4 +371,20 @@ sub win {
           "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
     die "Simulation ended";
+}
+
+sub sdir {
+    my $ci = $_[0];
+    my $cj = $_[1];
+    my $dir = $_[2];
+    if ($dir == 0) {
+        $ci++;
+    } elsif ($dir == 1) {
+        $cj--;
+    } elsif ($dir == 2) {
+        $ci--;
+    } elsif ($dir == 3) {
+        $cj++;
+    }
+    return ($ci, $cj);
 }
