@@ -433,13 +433,16 @@ sub move {
             my $ci = $i;
             my $cj = $j;
             ($ci, $cj) = sdir($ci, $cj, $dir);
-            #Politely switch spots with the open space
-            if (defined($grid[$ci][$cj])) {
-                if ($grid[$ci][$cj] eq " ") {
-                    $grid[$ci][$cj] = $grid[$i][$j];
-                    $grid[$i][$j] = " ";
-                }
-            }
+			#Politely switch spots with non-wall, non-dead space
+			if (defined($grid[$ci][$cj])) {
+				my $tmp = $grid[$ci][$cj];
+				if ($tmp eq "W" or $tmp eq "X") {
+					next;
+				} elsif (int(rand(10))<3) {
+					$grid[$ci][$cj] = $grid[$i][$j];
+					$grid[$i][$j] = $tmp;
+				}
+			}
         }
     }
 }
