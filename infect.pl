@@ -72,6 +72,10 @@ if ($mapfile) {
                     $soldiers++;
                 } elsif ($let eq "O") {
                     $citizens++;
+                } elsif ($let eq "X") {
+                    $dead++;
+                } elsif ($let eq "N") {
+                    $nurses++;
                 }
                 $total++;
             }
@@ -219,6 +223,12 @@ while (1) {
                                 } elsif ($which eq "N") {
                                     $nurses--;
                                 }
+                            }
+                         } elsif ($grid[$ci][$cj] eq "S") {
+                            my $schance = int(rand(101));
+                            if ($schance > 55) {
+                                $dead++; $soldiers--;
+                                $grid[$ci][$cj] = "X";
                             }
                         }
                     }
@@ -465,5 +475,14 @@ sub help {
 }
 sub interrupt {
     print "\033[2J\033[1;1H\n";
+    my $fn = 0;
+    $fn++ while -e "save$fn.vrs";
+    open(my $fh, '>', "save$fn.vrs");
+    for(my $i=0; $i<$xsize; $i++) {
+        for(my $j=0; $j<$ysize; $j++) {
+            print $fh $grid[$i][$j];
+        }
+        print $fh "\n";
+    }
     die "Simulation interrupted by user";
 }
