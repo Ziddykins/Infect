@@ -61,7 +61,7 @@ if (!$nurses and !$mapfile) {
 }
 
 
-my $citizens = $xsize * $ysize - ($doctors + $infected + $soldiers + $nurses);
+my $citizens = 0;
 $SIG{INT}    = \&interrupt;
 
 
@@ -127,6 +127,7 @@ if ($xsize and $ysize) {
 		if($grid[$x][$y] eq "O"){
 			$grid[$x][$y] = "I";
 			$tmpinfected--;
+			$citizens--;
 		}
 	}
 	my $tmpdoctors = $doctors;
@@ -136,6 +137,7 @@ if ($xsize and $ysize) {
 		if($grid[$x][$y] eq "O"){
 			$grid[$x][$y] = "D";
 			$tmpdoctors--;
+			$citizens--;
 		}
 	}
 	my $tmpnurses = $nurses;
@@ -145,6 +147,7 @@ if ($xsize and $ysize) {
 		if($grid[$x][$y] eq "O"){
 			$grid[$x][$y] = "D";
 			$tmpnurses--;
+			$citizens--;
 		}
 	}
 	my $tmpsoldiers = $soldiers;
@@ -154,6 +157,7 @@ if ($xsize and $ysize) {
 		if($grid[$x][$y] eq "O"){
 			$grid[$x][$y] = "D";
 			$tmpsoldiers--;
+			$citizens--;
 		}
 	}
 }
