@@ -44,7 +44,7 @@ my $total	= 0;
 my $timeout	= 200000;
 
 if (!$wood and !$mapfile) {
-	$wood = $xsize * $ysize * 0.5;
+	$wood = int($xsize * $ysize * 0.5);
 }
 #if not defined, set initial value for doctors, infected, soldiers and nurses
 if (!$doctors and !$mapfile) {
