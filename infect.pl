@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 
 use warnings; use strict;
-use Time::HiRes;
-use Term::ANSIColor qw(:constants);
 use Getopt::Long;
 
 my ($ysize, $xsize, $mapfile);
@@ -355,8 +353,6 @@ sub move {
     }
 }
 
-#Uncomment the lines below for monochrome output
-#and comment the bolded prints.
 sub printmap {
     $disp++;
     if ($disp >= 10 or $count >= $timeout or !$infected) {
@@ -364,32 +360,25 @@ sub printmap {
         print"\033[1;1H";
         for(my $i=0; $i<$xsize; $i++) {
            for(my $j=0; $j<$ysize; $j++) {
-                local $Term::ANSIColor::AUTORESET = 1;
                 if ($grid[$i][$j] eq "O") {
-                    print BOLD GREEN $grid[$i][$j];
-#                    print $grid[$i][$j];
+                     print "\x1b[32;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq "I") {
-                    print BOLD RED $grid[$i][$j];
-#                    print $grid[$i][$j];
+                    print "\x1b[31;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq "D") {
-                    print BOLD CYAN $grid[$i][$j];
-#                    print $grid[$i][$j];
+                     print "\x1b[36;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq "S") {
-                    print BOLD MAGENTA $grid[$i][$j];
-#                    print $grid[$i][$j];
+                     print "\x1b[35;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq " ") {
-                    print BOLD WHITE $grid[$i][$j];
-#                    print $grid[$i][$j];
+                     print "\x1b[37;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq "N") {
-                    print BOLD YELLOW $grid[$i][$j];
+                     print "\x1b[33;1m" . $grid[$i][$j];
                 } elsif ($grid[$i][$j] eq "W") {
-                    print BOLD GREEN ON_GREEN $grid[$i][$j], RESET;
+                     print "\x1b[32;1m\x1b[42;1m" . $grid[$i][$j] . "\x1b[0m";
                 } else {
-                    print BOLD WHITE $grid[$i][$j];
-#                    print $grid[$i][$j];
+                    print $grid[$i][$j];
                 }
             }
-            print "\n", RESET;
+            print "\x1b[0m\n";
         }
         print "=" x $ysize . "\n";
     }
