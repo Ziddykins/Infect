@@ -22,7 +22,7 @@ my $citizens = 0;
 my $gen      = 0;
 my $count    = 0;
 my $soldiers = 0;
-my $disp     = 1;
+my $disp     = 0;
 my $nurses   = 0;
 my $ff       = 0;
 my $total    = 0;
@@ -61,7 +61,7 @@ if ($mapfile) {
         $len = length($line);
         my @temp = split(//, $line);
         foreach my $let (@temp) {
-            if ($let !~ /[IOWDNXS]/) {
+            if ($let !~ /[IOWDNXS ]/) {
                 die "Invalid characters in map file\n";
             } else {
                 if ($let eq "I") {
@@ -124,7 +124,7 @@ if ($xsize and $ysize) {
 
 #Get our dimensions if a map is supplied.
 if ($mapfile) {
-    $xsize = scalar(@grid)-1;
+    $xsize = scalar(@grid);
     $ysize = $len-1;
 }
 
@@ -442,9 +442,6 @@ sub win {
 
 sub sdir {
     my ($ci, $cj, $dir) = @_;
-#    my $ci = $_[0];
-#    my $cj = $_[1];
-#    my $dir = $_[2];
     if ($dir == 0) {
         $ci++;
     } elsif ($dir == 1) {
