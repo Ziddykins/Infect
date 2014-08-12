@@ -112,12 +112,12 @@ while (1) {
                                 $dead++; $infected--;
                                 $count = 0;
                             } elsif ($doctor <= 55) {
-                                #infected converted into a qt nurse
+                                #infected converted into nurse
                                 $grid[$i][$j] = "N";
                                 $nurses++; $infected--;
                                 $count = 0;
                             } elsif ($doctor <= 80) {
-                                #doctor/qt nurse converted into infected
+                                #doctor/nurse converted into infected
                                 $grid[$ci][$cj] = "I";
                                 $infected++;
                                 if ($which eq "D") {
@@ -138,7 +138,7 @@ while (1) {
                                 $soldiers++;
                                 $count = 0;
                             } elsif ($doctor <= 100) {
-                                #both doctor/qt nurse and infected die
+                                #both doctor/nurse and infected die
                                 $grid[$i][$j]   = "X";
                                 $grid[$ci][$cj] = "X";
                                 $infected--;
@@ -231,7 +231,10 @@ while (1) {
                 if ($p2) { $cj += $r2; } else { $cj -= $r2; }
                 if(defined($grid[$ci][$cj])) {
                     my $which = $grid[$ci][$cj];
-                    if ($which eq "W") { next; }
+                    #If it's a doctor or a nurse
+                    if ($which =~ /[D|N]/ and $rchance <= 1) {
+                        $rchance = int(rand(101));
+                    }
                     if ($rchance <= 24) {
                         #If a citizen is in our radius of 2x3, don't shoot
                         #Doctors are fine though, who likes going to 
@@ -263,7 +266,7 @@ while (1) {
                                 $citizens--; $soldiers++;
                                 $count = 0;
                             }
-                        #Doctor or qt nurse is a victim of friendly 
+                        #Doctor or nurse is a victim of friendly 
                         #fire amidst the chaos
                         } elsif ($grid[$ci][$cj] eq "D" or $grid[$ci][$cj] eq "N") {
                             if ($rchance <= 1) {
@@ -350,6 +353,7 @@ sub printmap {
             }
             print "\n", RESET;
         }
+        print "=" x 100 . "\n";
     }
 }
 
@@ -368,13 +372,16 @@ sub win {
     }
     print "It only took " . $days . " days $result";
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
-          "qtNurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
+          "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
           " $ff) - Day: $days\n";
     die "Simulation ended";
 }
 
 sub sdir {
     my ($ci, $cj, $dir) = @_;
+#    my $ci = $_[0];
+#    my $cj = $_[1];
+#    my $dir = $_[2];
     if ($dir == 0) {
         $ci++;
     } elsif ($dir == 1) {
