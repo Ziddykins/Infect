@@ -512,6 +512,11 @@ sub help {
     print "--slow\t\t\tRun the simulation with slow speed. Very slow.\n";
     print "--fast\t\t\tRun the simulation with fast speed. Almost real-time!\n";
     print "--fastest\t\tRun the simulation at fastest speed.\n";
+    print "--d <int>\t\tSpecify the initial number of doctors\n";
+	print "--i <int>\t\tSpecify the initial number of infected\n";
+    print "--n <int>\t\tSpecify the initial number of nurses\n";
+    print "--s <int>\t\tSpecify the initial number of soldiers\n";
+    print "--w <int>\t\tSpecify initially available wood\n";
     die;
 }
 sub interrupt {
