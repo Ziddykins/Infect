@@ -15,16 +15,17 @@ GetOptions ("x=s" => \$xsize,
 my @grid;
 my $len;
 my $days     = 0;
-my $doctors  = 10;
-my $infected = 3;
+my $doctors  = 0;
+my $infected = 0;
 my $dead     = 0;
-my $citizens = 4986;
+my $citizens = 0;
 my $gen      = 0;
 my $count    = 0;
-my $soldiers = 1;
-my $disp     = 0;
+my $soldiers = 0;
+my $disp     = 1;
 my $nurses   = 0;
 my $ff       = 0;
+my $total    = 0;
 my $wood     = 5500;
 my $timeout  = 200000;
 $SIG{INT}    = \&interrupt;
@@ -62,6 +63,17 @@ if ($mapfile) {
         foreach my $let (@temp) {
             if ($let !~ /[IOWDNXS]/) {
                 die "Invalid characters in map file\n";
+            } else {
+                if ($let eq "I") {
+                    $infected++;
+                } elsif ($let eq "D") {
+                    $doctors++;
+                } elsif ($let eq "S") {
+                    $soldiers++;
+                } elsif ($let eq "O") {
+                    $citizens++;
+                }
+                $total++;
             }
         }
         push @grid, [ split(//, $line) ];
@@ -72,7 +84,8 @@ if ($mapfile) {
 if ($xsize and $ysize) {
     for(my $i=0; $i<$xsize; $i++) {
         for(my $j=0; $j<$ysize; $j++) {
-            $grid[$i][$j] = "O";
+            $grid[$i][$j] = "O"; $citizens++;
+            $total++;
         }
     }
     #Assign the units to random locations within the array constraints
@@ -90,6 +103,7 @@ if ($xsize and $ysize) {
     $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
     $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
     $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
+    $citizens -= 14; $infected += 3; $soldiers += 1; $doctors += 10;
 }
 
 #Uncomment and comment above to manually set locations.
@@ -110,13 +124,13 @@ if ($xsize and $ysize) {
 
 #Get our dimensions if a map is supplied.
 if ($mapfile) {
-    $xsize = scalar(@grid);
-    $ysize = $len;
+    $xsize = scalar(@grid)-1;
+    $ysize = $len-1;
 }
 
 while (1) {
     $days++;
-    if ($infected >= 4990) { win(0); }
+    if ($infected >= ($total * 0.75)) { win(0); }
     if ($count >= $timeout) { win(1); }
 
     #If there's no infected, y'dun winned
@@ -128,7 +142,7 @@ while (1) {
             }
         }
     }
-    if ($noin >= 5000) {
+    if ($noin >= $total) {
         win(1);
     }
     
@@ -374,8 +388,7 @@ sub move {
 }
 
 sub printmap {
-    $disp++;
-    if ($disp >= 10 or $count >= $timeout or !$infected) {
+#    if ($count >= $timeout or !$infected) {
         $disp  = 0;
         print"\033[1;1H";
         for(my $i=0; $i<$xsize; $i++) {
@@ -402,7 +415,7 @@ sub printmap {
         }
         print "=" x $ysize . "\n";
     }
-}
+#}
 
 sub win {
     my $result;
@@ -453,7 +466,6 @@ sub help {
     print "--fastest\t\tRun the simulation at fastest speed.\n";
     die;
 }
-
 sub interrupt {
     print "\033[2J\033[1;1H\n";
     die "Simulation interrupted by user";
