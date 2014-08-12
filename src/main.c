@@ -6,69 +6,25 @@
 
 #define X 100
 #define Y 50
-#define NORM	"\x1B[0m"
-#define RED		"\x1B[31m"
-#define GREEN 	"\x1B[32m"
-#define BLUE 	"\x1B[34m"
-#define MAG		"\x1B[35m"
-#define CYAN	"\x1B[36m"
 
 typedef enum _directions {NORTH, WEST, SOUTH, EAST} Directions;
 typedef enum _deltas {NONE, N=-1, W=-1, S=1, E=1} Deltas;
 typedef enum _characters {EMPTY,DEAD, INF, DOC, CIT, SOL} Characters;
-typedef enum _actions {NOTHING, DIE, DOCTORED, INFECTED, CITIZENED, SOLDIERED, REVIVE, CLEAN} Actions;
-
-typedef struct _infected {
-	const float nothing;
-	const float kill;
-	const float die;
-	const float doctored;
-	const float convert;
-	const float citizened;
-	const float soldiered;
-	const float trade;
-} Infected;
-
-typedef struct _doctor {
-	const float nothing;
-	const float doctored;
-} Doctor;
-
-typedef struct _citizen {
-	const float nothing;
-	const float doctored;
-	const float infected;
-} Citizen;
-
-typedef struct _soldier {
-	const float nothing;
-	const float action;
-} Soldier;
-
-typedef struct _probabilities {
-	Infected *infectedProb;
-	Doctor *doctorProb;
-	Citizen *citizenProb;
-	Soldier *soldierProb;
-} Probabilities;
 
 typedef struct _board {
 	Characters character;
-	Actions action;
 	int direction;
-	void *probabilities;
 } Board;
 
 typedef void (*action)(Board*, Board*);
 
-void generateCoord(Board board[][X], const int count, Characters type, Probabilities probabilities);
-void initialise(Board board[][X], Probabilities probabilities);
-void defaultBoard(Board board[][X], Probabilities probabilities);
+void generateCoord(Board board[][X], const int count, Characters type);
+void initialise(Board board[][X]);
+void defaultBoard(Board board[][X]);
 void displayBoard(Board board[][X], int days);
-void getActions(Board board[][X], Probabilities probabilities);
+void getActions(Board board[][X]);
 Board * getDelta(Board board[][X], int y, int x);
 void getMoves(Board board[][X]);
-void processActions(Board board[][X], Probabilities probabilities);
 void checkTarget(Board board[][X], int y, int x, action getAction);
 void getActionInf(Board *infected, Board *target);
 void getActionDoc(Board *doctor, Board *target);
@@ -79,7 +35,7 @@ int checkOutBounds(Board board[][X], Directions move, int y, int x);
 
 int main (int argc, char **argv) 
 {
-	int days = 0;
+	unsigned int days = 0;
 	srand(time(NULL));
 	initscr();
 	noecho();
@@ -90,24 +46,16 @@ int main (int argc, char **argv)
 	init_pair(3, COLOR_BLUE, COLOR_BLACK);
 	init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
 
-	Infected infectedActions = {0.75f, 0.25f, 0.25f, 0.05f, 0.25f, 0.05f, 0.05f, 0.10f};
-	Doctor doctorActions = {0.95f, 0.05f};
-	Citizen citizenActions = {0.98f, 0.01f, 0.01f};
-	Soldier soldierActions = {0.75f, 0.25f};
-	Probabilities probabilities = {&infectedActions, &doctorActions, &citizenActions, &soldierActions};
-
 	Board board[Y][X] = {{0}};	
 
-	initialise(board, probabilities);
+	initialise(board);
 	do {
 		if (!(days%5)) {
 			displayBoard(board, days);
 			refresh();
 			sleep(1);
 		}
-		//printf("\n\n");
-		getActions(board, probabilities);
-		processActions(board, probabilities);
+		getActions(board);
 		getMoves(board);
 		++days;
 	} while (days < 1000);	
@@ -115,61 +63,14 @@ int main (int argc, char **argv)
 	endwin();
 }
 
-void initialise(Board board[][X], Probabilities probabilities)
+void initialise(Board board[][X])
 {
 	const int countS = 1, countI = 3, countD = 10;
 
-	defaultBoard(board, probabilities);	
-	generateCoord(board, countS, SOL, probabilities);
-	generateCoord(board, countI, INF, probabilities);
-	generateCoord(board, countD, DOC, probabilities);
-}
-
-void processActions(Board board[][X], Probabilities probabilities)
-{
-	for (size_t i = 0; i < Y; i++) {
-		for (size_t j = 0; j < X; j++) {
-			switch (board[i][j].action) {
-				case NOTHING:
-					break;
-				case DIE:
-					board[i][j].character = DEAD;
-					board[i][j].probabilities = NULL;
-					break;
-				
-				case INFECTED:
-					board[i][j].character = INF;
-					board[i][j].probabilities = probabilities.infectedProb;
-					break;
-
-				case DOCTORED:
-					board[i][j].character = DOC;
-					board[i][j].probabilities = probabilities.doctorProb;
-					break;
-
-				case SOLDIERED:
-					board[i][j].character = SOL;
-					board[i][j].probabilities = probabilities.soldierProb;
-					break;
-
-				case CITIZENED:
-					board[i][j].character = CIT;
-					board[i][j].probabilities = probabilities.citizenProb;
-					break;
-
-				case REVIVE:
-					board[i][j].character = CIT;
-					board[i][j].probabilities = probabilities.citizenProb;
-
-				case CLEAN:
-					board[i][j].character = EMPTY;
-					board[i][j].probabilities = NULL;
-			}
-
-			board[i][j].action = NOTHING;
-			board[i][j].direction = NONE;
-		}
-	}
+	defaultBoard(board);	
+	generateCoord(board, countS, SOL);
+	generateCoord(board, countI, INF);
+	generateCoord(board, countD, DOC);
 }
 
 void getMoves(Board board[][X])
@@ -182,7 +83,7 @@ void getMoves(Board board[][X])
 				case CIT:
 				case SOL:
 					board[i][j].direction = rand()%4;
-					if (!checkOutBounds(board, board[i][j].direction, i, j)) {
+					if (checkOutBounds(board, board[i][j].direction, i, j)) {
 						Board *target = getDelta(board, i, j);
 						if (target->character == EMPTY) {
 							target->character = board[i][j].character;
@@ -198,7 +99,7 @@ void getMoves(Board board[][X])
 	}
 }
 
-void getActions(Board board[][X], Probabilities probabilities) 
+void getActions(Board board[][X]) 
 {
 	for (size_t i = 0; i < Y; i++) {
 		for (size_t j = 0; j < X; j++) {
@@ -208,22 +109,22 @@ void getActions(Board board[][X], Probabilities probabilities)
 				case EMPTY:
 					break;
 				case INF:
-					if (rand()%100 >= 75 && !checkOutBounds(board, board[i][j].direction, i, j)) { 
+					if (rand()%100 >= 75 && checkOutBounds(board, board[i][j].direction, i, j)) { 
 						checkTarget(board, i, j, getActionInf);
 					}
 					break;
 				case DOC:
-					if (!checkOutBounds(board, board[i][j].direction, i, j)) {
+					if (checkOutBounds(board, board[i][j].direction, i, j)) {
 						checkTarget(board, i, j, getActionDoc);	
 					}
 					break;
 				case CIT:
-					if (rand()%100 >= 98 && !checkOutBounds(board, board[i][j].direction, i, j)) {
+					if (rand()%100 >= 98 && checkOutBounds(board, board[i][j].direction, i, j)) {
 						checkTarget(board, i, j, getActionCit);
 					}
 					break;
 				case SOL:
-					if (rand()%100 >= 75 && !checkOutBounds(board, board[i][j].direction, i, j)) {
+					if (rand()%100 >= 75 && checkOutBounds(board, board[i][j].direction, i, j)) {
 						checkTarget(board, i, j, getActionSol);
 					}
 					break;
@@ -250,9 +151,11 @@ Board * getDelta(Board board[][X], int y, int x)
 
 void checkTarget(Board board[][X], int y, int x, action getAction)
 {
-	Board *target;
+	Board *target = NULL;
 	
 	target = getDelta(board, y, x);
+
+	if (target == NULL) exit(EXIT_FAILURE);
 
 	getAction(&board[y][x], target);
 }
@@ -260,25 +163,25 @@ void checkTarget(Board board[][X], int y, int x, action getAction)
 void getActionInf(Board *infected,  Board *target)
 {
 	if (target->character == CIT) {
-		target->action = INFECTED;
+		target->character = INF;
 	} else if (target->character == DOC) {
 		int prob = rand()%100;
 	
 		if (prob < 5) {
-			infected->action = DOCTORED;
+			infected->character = DOC;
 		} else if (prob >=5 && prob < 10) {
-			infected->action = CITIZENED;
+			infected->character = CIT;
 		} else if (prob >=10 && prob < 15) {
-			infected->action = SOLDIERED;
+			infected->character = SOL;
 		} else if (prob >= 15 && prob < 25) {
-			infected->action = DIE;
-			target->action = DIE;
+			infected->character = DEAD;
+			target->character = DEAD;
 		} else if (prob >= 25 && prob < 50) {
-			target->action = INFECTED;
+			target->character = INF;
 		} else if (prob >= 50 && prob < 75) {
-			target->action = DIE;
+			target->character = DEAD;
 		} else {
-			infected->action = DIE;
+			infected->character = DEAD;
 		}
 	}		
 }
@@ -288,11 +191,11 @@ void getActionDoc(Board *doctor, Board *target)
 	int prob = rand()%100;
 	if (target->character == CIT || target->character == INF) {
 		if (prob < 7) {
-			target->action = DOCTORED;
+			target->character = DOC;
 		}
 	} else if (target->character == DEAD) {
 		if (prob == 10) {
-			target->action = REVIVE;
+			target->character = CIT;
 		}
 	}
 }
@@ -301,9 +204,9 @@ void getActionCit(Board *citizen, Board *target)
 {
 	int prob = rand()%100;
 	if (prob == 10) {
-		citizen->action = DOCTORED;
+		citizen->character = DOC;
 	} else if (prob == 23) {
-		citizen->action = INFECTED;
+		citizen->character = INF;
 	}
 }
 
@@ -312,33 +215,29 @@ void getActionSol(Board *soldier, Board *target)
 	int prob = rand()%100;
 	if (target->character == DOC) {
 		if (prob == 11) {
-			target->action = DIE;
+			target->character = DEAD;
 		}
 	} else if (target->character == INF) {
-		target->action = DIE;
+		target->character = DEAD;
 	} else if (target->character == DEAD) {
-		target->action = CLEAN;
+		target->character = EMPTY;
 	} else if (target->character == CIT) {
 		if (prob >=80) {
-			target->action = SOLDIERED;
+			target->character = SOL;
 		}
 	}
 }
 
 int checkOutBounds(Board board[][X], Directions move, int y, int x)
 {
-	if (move == NORTH) {
-		//board[y][x].direction = N;		
-		return (y + N >= 0 ? 0 : 1);
+	if (move == NORTH) {		
+		return (y + N >= 0);
 	} else if (move == SOUTH) {
-		//board[y][x].direction = S;
-		return(y + S < Y ? 0 : 1);
+		return (y + S < Y);
 	} else if (move == WEST) {
-		//board[y][x].direction = W;
-		return(x + W >= 0 ? 0 : 1);
+		return (x + W >= 0);
 	} else {
-		//board[y][x].direction = E;
-		return(x + E < X ? 0 : 1);
+		return (x + E < X);
 	}
 }
 
@@ -350,28 +249,24 @@ void displayBoard(Board board[][X], int days)
 		for (size_t j = 0; j < X; j++) {
 			switch (board[i][j].character) {
 				case SOL:
-					//printf("%sS", MAG);
 					attron(COLOR_PAIR(4));
 					mvprintw(i, j, "S");
 					attroff(COLOR_PAIR(4));
 					break;
 				
 				case INF:
-					//printf("%sI", RED);
 					attron(COLOR_PAIR(1));
 					mvprintw(i, j, "I");
 					attroff(COLOR_PAIR(1));
 					break;
 
 				case DOC:
-					//printf("%sD", BLUE);
 					attron(COLOR_PAIR(3));
 					mvprintw(i, j, "D");
 					attroff(COLOR_PAIR(3));
 					break;
 
 				case CIT:
-					//printf("%sO", GREEN);
 					attron(COLOR_PAIR(2));
 					mvprintw(i, j, "O");
 					attroff(COLOR_PAIR(2));		
@@ -382,29 +277,25 @@ void displayBoard(Board board[][X], int days)
 					break;
 				
 				default:
-					//printf("%sX", NORM);
 					mvprintw(i, j, " ");
 					break;
 			}
 		}
-		//printf("\n");
 	}
 	mvprintw(i, 0, "Day %d", days);
 }	
 
-void defaultBoard(Board board[][X], Probabilities probabilities)
+void defaultBoard(Board board[][X])
 {
 	for (size_t i = 0; i < Y; i++) {
 		for (size_t j = 0; j < X; j++) {
 			board[i][j].character = CIT;
-			board[i][j].action = NOTHING;
 			board[i][j].direction = NONE;
-			board[i][j].probabilities = probabilities.citizenProb;
 		}
 	} 
 }
 
-void generateCoord(Board board[][X], const int count, Characters type, Probabilities probabilities)
+void generateCoord(Board board[][X], const int count, Characters type)
 {
 	int x = 0, y = 0;
 
@@ -415,14 +306,6 @@ void generateCoord(Board board[][X], const int count, Characters type, Probabili
 		} while(board[y][x].character != CIT);
 		
 		board[y][x].character = type;
-		
-		if (type == DOC) {
-			board[y][x].probabilities = probabilities.doctorProb;
-		} else if (type == INF) {
-			board[y][x].probabilities = probabilities.infectedProb;
-		} else {		
-			board[y][x].probabilities = probabilities.soldierProb;
-		}
 	} 
 }
 	
