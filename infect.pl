@@ -395,7 +395,7 @@ sub printmap {
                 } elsif ($grid[$i][$j] eq "W") {
                      print "\x1b[32;1m\x1b[42;1m" . $grid[$i][$j] . "\x1b[0m";
                 } else {
-                    print $grid[$i][$j];
+                    print "\x1b[37;1m" . $grid[$i][$j];
                 }
             }
             print "\x1b[0m\n";
