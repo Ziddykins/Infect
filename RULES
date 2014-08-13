@@ -32,6 +32,8 @@ If action is towards a doctor/nurse:
 -->5% chance infected is healed to citizen
 -->5% chance infected healed to soldier
 -->10% chance they both die.
+If action is towards a soldier:
+-->45% chance soldier dies
 
 Doctor actions:
 -->7% chance to convert citizen or infected to nurse
