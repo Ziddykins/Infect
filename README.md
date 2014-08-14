@@ -22,4 +22,4 @@ are supplied (20x79)
 amount of citizens, infected, and days passed.
 
 ### 12/8/2014
-Source has been posted!
+- Source has been posted!
