@@ -6,6 +6,7 @@ A game built by /g/, for /g/
 
 I always forget to update these, but here goes
 ### 13/8/2014
+##### Status: Not uploaded
 - Soldiers now move 2 spaces at once. This cuts down on
 infected surviving in corners and behind walls/bodies.
 - Introduction of a new unit, the Angel. The Angel comes
