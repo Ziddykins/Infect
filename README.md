@@ -15,7 +15,7 @@ with a 75% chance success rate. They don't stay on the
 board after they cast their conversion spell, but this
 may change in the future (probably will).
 - Added a terminal-friendly default size grid if no arguments
-are supplied (20x79) Original idea by ![Ilovecock](https://github.com/ilovecock "Ilovecock")
+are supplied (20x79) Original idea by [Ilovecock](https://github.com/ilovecock)
 - Added a display bar at the bottom which shows you the
 amount of citizens, infected, and days passed.
 
