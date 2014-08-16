@@ -6,6 +6,8 @@ W = Wall (green-on-green in some terminals)
 X = Corpse (White)
 I = Infected (Red)
 S = Soldier (Magenta)
+F = Fire (Flashing red/yellow)
+A = Red on yellow
 **************
 
 ****EXAMPLE ARGUMENTS****
@@ -72,3 +74,13 @@ After 100 days, citizens can build walls. The town has a limited supply
 of wood (5000 currently). Each wall takes between 1 and 25 wood to build
 once out of wood, there is no getting more (yet?). Currently the building
 AI is absolutely terrible especially since they move each turn.
+
+Fire:
+Does nothing yet, but citizens sure like to start 'em
+
+Angels:
+There is a 25% chance an angel will spawn on a day that is a multiple
+of 200, in a random open space. Upon landing, it will cure all
+infected and revive all dead in its 3x5 radius. On a day that is
+a multiple of 700, the angel is removed from the board and replaced
+with an open space.
