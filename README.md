@@ -2,7 +2,7 @@ Infect
 ======
 
 A game built by /g/, for /g/
-![alt text](http://oi62.tinypic.com/okvp0z.jpg "Infect")
+![2spooky](http://oi62.tinypic.com/25gz1vo.jpg "Infect")
 
 I always forget to update these, but here goes
 ### 13/8/2014
