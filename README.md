@@ -32,7 +32,7 @@ infected surviving in corners and behind walls/bodies.
 - Introduction of a new unit, the Angel. The Angel comes
 every 200 turns and lands in a random, free space. They
 have a radius of 3x5 and heal all infected in that radius
-with a 75% chance success rate. They don't stay on the
+with a 25% chance success rate. They don't stay on the
 board after they cast their conversion spell, but this
 may change in the future (probably will).
 - Added a terminal-friendly default size grid if no arguments
