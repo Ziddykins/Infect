@@ -15,7 +15,7 @@ I always forget to update these, but here goes
 - Added new version of [gmap](maps/gmap-v2.vrs)
 - Moved units into functions (phew)
 - Code clean-up/addressing redundancy
-- Wood now based on size of map
+- Wood now based on size of map (x*y/3)
 - Citizens now only have a 0.1% chance instead of a 1%
   chance to randomly become a doctor or catching the
   airborne infection. This also makes it much easier to see
