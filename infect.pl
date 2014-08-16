@@ -127,7 +127,7 @@ if ($mapfile) {
 print "\x1b[2J\x1b[1;1H";
 
 #amount of wood available based on grid size
-my $wood = $total * 0.5;
+my $wood = int($total / 3);
 
 while (1) {
     $days++;
