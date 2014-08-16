@@ -22,7 +22,7 @@ I always forget to update these, but here goes
   the infected actually spreading from their original hosts
 - Citizens now have a 0.1% chance to kill an infected in the direction of their action
 - Fixed soldier bug where they wouldn't kill infected
-- Angels now revive bodies as well
+- Angels now revive the dead to citizens
 
 
 ### 13/8/2014
