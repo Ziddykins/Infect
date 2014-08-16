@@ -160,7 +160,7 @@ while (1) {
                 my $l   = int(rand($ysize));
                 my $try = 0;
                 unless ($angels) {
-    #                while ($try < $xsize * $ysize) {
+                    while ($try < $xsize * $ysize) {
                         $k = int(rand($xsize));
                         $l = int(rand($ysize));
                         if ($grid[$k][$l] eq " ") {
@@ -169,7 +169,7 @@ while (1) {
                             $try = $xsize * $ysize;
                         }
                         $try++;
-                   # }
+                    }
                 }
             }
             #Who's turn is it?
