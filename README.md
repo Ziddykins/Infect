@@ -24,6 +24,7 @@ A game built by /g/, for /g/
 - Soldiers now only have a 10% chance to be killed by the infected
 - Soldiers now have a 75% chance to put out fire, which still does nothing
 - Iteration and unit-calls moved to their own function
+- Main loop no longer runs globally
 
 ### 16/8/2014
 ###### [Status: Outdated]
