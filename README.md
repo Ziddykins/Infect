@@ -4,10 +4,28 @@ Infect
 A game built by /g/, for /g/
 ![2spooky](http://oi62.tinypic.com/25gz1vo.jpg "Infect")
 
-I always forget to update these, but here goes
+### 18/8/2014
+###### [Status: Current]
+- Incorporated [Ilovecock](https://github.com/ilovecock)'s unit assigning to avoid duplicate initial placement
+- Units now switch places with each other; infected and citizens can not switch
+- Nurse's and doctor's citizen->nurse conversion reduced to 2%
+- Doctors no longer convert infected to nurses
+- Doctor's infected->citizen conversion increased to 60%
+- Airborne rate for infection and spontaneous doctor change from 0.1% to 0.01%
+- Always leave room for an angel; this means citizens will not build 
+  walls if there is only one open space. This eliminates hang-time when an angel
+  placement is stuck in a while-loop.
+- Infection spread rate reduced to 3% chance to infect citizen
+- Soldier now moves one OR two spaces instead of only two
+- Fire "animation" doubled in speed
+- Game will not start if supplied units outnumber amount of spots on the board minus 1
+- Added end result of infected populating the world (2nd timeout method)
+- Unit display SEEMS to be working properly now... Shouldn't have any more negative values.
+- Soldiers now only have a 10% chance to be killed by the infected
+- Soldiers now have a 75% chance to put out fire, which still does nothing
 
 ### 16/8/2014
-###### [Status: Current]
+###### [Status: Outdated]
 - Added fire; currently does nothing
 - Added default speed on unspecified arguments (fast)
 - Citizens have a 1% chance to set a wall on fire
