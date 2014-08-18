@@ -207,6 +207,10 @@ print "\x1b[2J\x1b[1;1H";
 #amount of wood available based on grid size
 my $wood = int($total / 3);
 
+
+############
+##MAIN LOOP#
+############
 while (1) {
     $days++;
     if ($infected >= ($total * 0.75)) { win(0); }
@@ -225,50 +229,10 @@ while (1) {
         win(1);
     }
 
-    #Just keep iterating through the entire grid left to right
-    for(my $i=0; $i<$xsize; $i++) {
-        for(my $j=0; $j<$ysize; $j++) {
-            my $chance = int(rand(101));
-            my $doctor = int(rand(101));
-            $count++;
-            my $ci = $i;
-            my $cj = $j;
-            if ($days % 200 == 0) {
-                my $k   = int(rand($xsize));
-                my $l   = int(rand($ysize));
-                my $try = 0;
-                unless ($angels) {
-                    while ($try < $xsize * $ysize / 2) {
-                        $k = int(rand($xsize));
-                        $l = int(rand($ysize));
-                        if ($grid[$k][$l] eq " ") {
-                            $grid[$k][$l] = "A";
-                            $angels++; $open--;
-                            $try = $xsize * $ysize;
-                        }
-                        $try++;
-                    }
-                }
-            }
-            #Who's turn is it?
-            if ($grid[$i][$j] eq "I") {
-                infected($chance, $doctor, $i, $j, $ci, $cj);
-            } elsif ($grid[$i][$j] eq "D" or $grid[$i][$j] eq "N") {
-                doctors($chance, $doctor, $i, $j, $ci, $cj);
-            } elsif ($grid[$i][$j] eq "O") {
-                citizens($chance, $doctor, $i, $j, $ci, $cj);
-            } elsif ($grid[$i][$j] eq "S") {
-                soldiers($chance, $doctor, $i, $j, $ci, $cj);
-            } elsif ($grid[$i][$j] eq "A") {
-                angels($chance, $doctor, $i, $j, $ci, $cj);
-            }
-            if ($slow) { &printmap; }            
-        }
-        if ($fast) { &printmap; }
-    }
-    &move;
-    if ($fastest) { &printmap; }
+    #Do action for selected unit
+    &action;
 }
+
 
 sub move {
     for(my $i=0; $i<$xsize; $i++) {
@@ -348,7 +312,7 @@ sub printmap {
     if (!$_[0]) {
         my $healthy = $doctors + $nurses + $citizens + $soldiers;
         my $str = "Day: $days - Infected: $infected - Citizens: $citizens" .
-                  " - Healthy: ($healthy/" . ($total - $t_init) . ");
+                  " - Healthy: ($healthy/" . ($total - $t_init) . ") empty: $open";
         print $str;
         print "=" x (($ysize - length($days)) - length($str) + 2)  . "\r";
     }
@@ -692,4 +656,49 @@ sub angels {
             }
         }
     }
+}
+
+sub action {
+    for(my $i=0; $i<$xsize; $i++) {
+        for(my $j=0; $j<$ysize; $j++) {
+            my $chance = int(rand(101));
+            my $doctor = int(rand(101));
+            $count++;
+            my $ci = $i;
+            my $cj = $j;
+            if ($days % 200 == 0) {
+                my $k   = int(rand($xsize));
+                my $l   = int(rand($ysize));
+                my $try = 0;
+                unless ($angels) {
+                    while ($try < $xsize * $ysize / 2) {
+                        $k = int(rand($xsize));
+                        $l = int(rand($ysize));
+                        if ($grid[$k][$l] eq " ") {
+                            $grid[$k][$l] = "A";
+                            $angels++; $open--;
+                            $try = $xsize * $ysize;
+                        }
+                        $try++;
+                    }
+                }
+            }
+
+            if ($grid[$i][$j] eq "I") {
+                infected($chance, $doctor, $i, $j, $ci, $cj);
+            } elsif ($grid[$i][$j] eq "D" or $grid[$i][$j] eq "N") {
+                doctors($chance, $doctor, $i, $j, $ci, $cj);
+            } elsif ($grid[$i][$j] eq "O") {
+                citizens($chance, $doctor, $i, $j, $ci, $cj);
+            } elsif ($grid[$i][$j] eq "S") {
+                soldiers($chance, $doctor, $i, $j, $ci, $cj);
+            } elsif ($grid[$i][$j] eq "A") {
+                angels($chance, $doctor, $i, $j, $ci, $cj);
+            }
+            if ($slow) { &printmap; }
+        }
+        if ($fast) { &printmap; }
+    }
+    &move;
+    if ($fastest) { &printmap; }
 }
