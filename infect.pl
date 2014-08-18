@@ -208,29 +208,34 @@ print "\x1b[2J\x1b[1;1H";
 my $wood = int($total / 3);
 
 
+#Let's start
+&main;
+
 ############
 ##MAIN LOOP#
 ############
-while (1) {
-    $days++;
-    if ($infected >= ($total * 0.75)) { win(0); }
-    if ($count >= $timeout) { win(1); }
-
-    #If there's no infected, y'dun winned
-    my $noin = 0;
-    for(my $n=0; $n<$xsize; $n++) {
-        for(my $m=0; $m<$ysize; $m++) {
-            if (!grep(/I/, $grid[$n][$m])) {
-                $noin++;
+sub main {
+    while (1) {
+        $days++;
+        if ($infected >= ($total * 0.75)) { win(0); }
+        if ($count >= $timeout) { win(1); }
+    
+        #If there's no infected, y'dun winned
+        my $noin = 0;
+        for(my $n=0; $n<$xsize; $n++) {
+            for(my $m=0; $m<$ysize; $m++) {
+                if (!grep(/I/, $grid[$n][$m])) {
+                    $noin++;
+                }
             }
         }
+        if ($noin >= $total) {
+            win(1);
+        }
+    
+        #Do action for selected unit
+        &action;
     }
-    if ($noin >= $total) {
-        win(1);
-    }
-
-    #Do action for selected unit
-    &action;
 }
 
 
