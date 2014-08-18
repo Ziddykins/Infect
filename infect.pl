@@ -4,38 +4,78 @@ use warnings; use strict;
 use Getopt::Long;
 
 my ($ysize, $xsize, $mapfile,
-    $slow, $fast, $fastest);
+    $slow, $fast, $fastest,
+    $doctors, $nurses, $infected,
+    $soldiers, $citizens);
 
 GetOptions ("x=s" => \$xsize,
             "y=s" => \$ysize,
+            "d=s" => \$doctors,
+            "n=s" => \$nurses,
+            "i=s" =>  \$infected,
+            "s=s" => \$soldiers,
             "map=s" => \$mapfile,
             "slow" => \$slow,
             "fast" => \$fast,
-            "fastest" => \$fastest);
+            "fastest" => \$fastest,
+            "h|help" => \&help);
 my @grid;
 
-my ($len, $days, $doctors, $infected, $dead,
-    $citizens, $gen, $count, $angels, $soldiers,
-    $nurses, $ff, $total, $fcolor, $walls) = (0,0,0,0,0,
-                                              0,0,0,0,0,
-                                              0,0,0,1,0);
+my ($len, $days,  $dead,  $gen,
+    $count, $angels,  $ff, $total,
+    $fcolor, $walls, $open) = (0,0,0,0,
+                               0,0,0,0,
+                               1,0,0  );
 my $timeout  = 200000;
 $SIG{INT}    = \&interrupt;
 
 #No map arguments?
 if (!$xsize and !$ysize and !$mapfile) {
-    &help;
     print "No arguments supplied: run default values? [y/n]: ";
     my $choice = <STDIN>;
     if ($choice =~ /^y[es]?/i or $choice eq "\n") {
         $ysize = 79;
         $xsize = 20;
         $fast  =  1 if (!$slow and !$fastest);
+        $citizens = $xsize * $ysize;
     } else {
-        die "Simulation canceled";
+        die "Simulation canceled by user";
     }
 }
 
+#No unit arguments?
+#Original idea by Ilovecock
+if (!$doctors and !$mapfile) {
+    $doctors = int(($xsize * $ysize) * 0.001);
+    if ($doctors < 1) { $doctors++; }
+    $citizens -= $doctors;
+} elsif ($doctors and !$mapfile) {
+    $citizens -= $doctors;
+}
+
+if (!$nurses and !$mapfile) {
+    $nurses = int(($xsize * $ysize) * 0.0005);
+    if ($nurses < 1) { $nurses++; }
+    $citizens -= $nurses;
+} elsif ($nurses and !$mapfile) {
+    $citizens -= $nurses;
+}
+
+if (!$soldiers and !$mapfile) {
+    $soldiers = int(($xsize * $ysize) * 0.003);
+    if ($soldiers < 1) { $soldiers++;  }
+    $citizens -= $soldiers;
+} elsif ($soldiers and !$mapfile) {
+    $citizens -= $soldiers;
+}
+
+if (!$infected and !$mapfile) {
+    $infected = int(($xsize * $ysize) * 0.0005);
+    if ($infected < 1) { $infected++; }
+    $citizens -= $infected;
+} elsif ($infected and !$mapfile) {
+    $citizens -= $infected;
+}
 #User tries to supply map and map size?
 if ($mapfile and $ysize or $mapfile and $xsize) {
     die "Can't specify size and map\n";
@@ -81,6 +121,8 @@ if ($mapfile) {
                     $nurses++;
                 } elsif ($let eq "W") {
                     $walls++;
+                } elsif ($let eq " ") {
+                    $open++;
                 }
                 $total++;
             }
@@ -95,26 +137,62 @@ my $t_init = $walls;
 if (!$mapfile) {
     for(my $i=0; $i<$xsize; $i++) {
         for(my $j=0; $j<$ysize; $j++) {
-            $grid[$i][$j] = "O"; $citizens++;
+            $grid[$i][$j] = "O";
             $total++;
         }
     }
     #Assign the units to random locations within the array constraints
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "I";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "D";
-    $grid[int(rand(scalar(@grid)-1))][int(rand(scalar(@grid)*2-1))] = "S";
-    $citizens -= 14; $infected += 3; $soldiers += 1; $doctors += 10;
+    #Updated to incorporate Ilovecock's idea
+    my ($tdoc, $tinf, $tnur, $tsol) = ($doctors, $infected, $nurses, $soldiers);
+    my $units = $tdoc + $tinf + $tnur + $tsol;
+    if ($citizens < 1) { $citizens = $ysize * $xsize - $units; }
+
+    if ($units >= $ysize * $xsize) { 
+        die "Not enough space to accomodate your units\n";
+    }
+
+    while($tdoc) {
+        my $i = int(rand($xsize));
+        my $j = int(rand($ysize));
+        if ($grid[$i][$j] eq "O") {
+            $grid[$i][$j] = "D";
+            $tdoc--;
+        }
+    }
+    while ($tinf) {
+        my $i = int(rand($xsize));
+        my $j = int(rand($ysize));
+        if ($grid[$i][$j] eq "O") {
+            $grid[$i][$j] = "I";
+            $tinf--;
+        }
+    }
+    while ($tnur) {
+        my $i = int(rand($xsize));
+        my $j = int(rand($ysize));
+        if ($grid[$i][$j] eq "O") {
+            $grid[$i][$j] = "N";
+            $tnur--;
+        }
+    }
+    while ($tsol) {
+        my $i = int(rand($xsize));
+        my $j = int(rand($ysize));
+        if ($grid[$i][$j] eq "O") {
+            $grid[$i][$j] = "S";
+            $tsol--;
+        }
+    }
+    for(my $n=0; $n<$xsize; $n++) {
+        for(my $m=0; $m<$ysize; $m++) {
+            if ($grid[$n][$m] eq "O" and !$open) {
+                $grid[$n][$m] = " ";
+                $citizens--; $open++;
+                last;
+            }
+        }
+    }
+    if (!$open) { die "Too many units on the board\n"; }
 }
 
 #Get our dimensions if a map is supplied.
@@ -147,7 +225,7 @@ while (1) {
         win(1);
     }
 
-    #Just keep iterating through the entire grid one by one
+    #Just keep iterating through the entire grid left to right
     for(my $i=0; $i<$xsize; $i++) {
         for(my $j=0; $j<$ysize; $j++) {
             my $chance = int(rand(101));
@@ -160,12 +238,12 @@ while (1) {
                 my $l   = int(rand($ysize));
                 my $try = 0;
                 unless ($angels) {
-                    while ($try < $xsize * $ysize) {
+                    while ($try < $xsize * $ysize / 2) {
                         $k = int(rand($xsize));
                         $l = int(rand($ysize));
                         if ($grid[$k][$l] eq " ") {
                             $grid[$k][$l] = "A";
-                            $angels++;
+                            $angels++; $open--;
                             $try = $xsize * $ysize;
                         }
                         $try++;
@@ -211,12 +289,23 @@ sub move {
             my $ci = $i;
             my $cj = $j;
             ($ci, $cj) = sdir($ci, $cj, $dir, $which);
-            #Politely switch Spots with the open space
+
+            #Politely switch spots with the unit, granted it isn't
+            #a blank space switching with another blank space,  or
+            #infected changing places with a citizen
             if (defined($grid[$ci][$cj])) {
-                if ($grid[$ci][$cj] eq " ") {
-                    $grid[$ci][$cj] = $grid[$i][$j];
-                    $grid[$i][$j] = " ";
-                }
+                my $switched = $grid[$ci][$cj];
+                my $switchee = $grid[$i][$j];
+
+                if ($switched =~ /[WXF]/) { next; }
+                if ($switchee =~ /[WXF]/) { next; }
+
+                if ($switched eq "I" and $switchee eq "O" or
+                    $switched eq "O" and $switchee eq "I") { next; }
+                if ($switched eq " " and $switchee eq " ") { next; }
+                
+                $grid[$ci][$cj] = $grid[$i][$j];
+                $grid[$i][$j] = $switched;
             }
         }
     }
@@ -244,9 +333,9 @@ sub printmap {
                 print "\x1b[31;1m\x1b[43;1m" . $grid[$i][$j] . "\x1b[0m";
             } elsif ($grid[$i][$j] eq "F") {
                 my $prev = $fcolor;
-                if ($days % 100 == 0) {
+                if ($days % 50 == 0) {
                     $fcolor = 1;
-                } elsif ($days % 50 == 0) {
+                } elsif ($days % 25 == 0) {
                     $fcolor = 3;
                 }
                 print "\x1b[3$fcolor" . ";1m" . $grid[$i][$j];
@@ -254,13 +343,15 @@ sub printmap {
                 print "\x1b[37;1m" . $grid[$i][$j];
             }
         }
-        print "\x1b[0m|\n";
+        print"\033[0m|\n";
     }
-    my $healthy = $doctors + $nurses + $citizens + $soldiers;
-    my $str = "Day: $days - Infected: $infected - Citizens: $citizens" .
-              " - Healthy: ($healthy/" . ($total - $t_init) . ")";
-    print $str;
-    print "=" x (($ysize - length($days)) - length($str) + 2)  . "\r";
+    if (!$_[0]) {
+        my $healthy = $doctors + $nurses + $citizens + $soldiers;
+        my $str = "Day: $days - Infected: $infected - Citizens: $citizens" .
+                  " - Healthy: ($healthy/" . ($total - $t_init) . ") empty: $open";
+        print $str;
+        print "=" x (($ysize - length($days)) - length($str) + 2)  . "\r";
+    }
 }
         
 sub win {
@@ -269,14 +360,16 @@ sub win {
     if ($_[0] == 1) {
         if (!$infected) {
             $result = "for the infection to be eliminated\n";
+        } elsif ($infected > $citizens) {
+            $result = "for the infected to populate the world\n";
         } else {
             $result = "for the infection to be contained\n";
         }
     } else {
         $result = "for the world to descend into chaos\n";
     }
-    print "\x1b[2J\x1b[1;1H";
-    &printmap;
+    print "\033[1;1H\033[2J\033[K";
+    printmap("end");
     print "It only took " . $days . " days $result";
     print "Doctors: $doctors - Infected: $infected - Citizens: $citizens\n" .
           "Nurses: $nurses - Soldiers: $soldiers - Dead: $dead (Friendly Fire: " .
@@ -288,14 +381,15 @@ sub win {
 
 sub sdir {
     my ($ci, $cj, $dir, $which) = @_;
+    my $step = int(rand(3)); if (!$step) { $step++; }
     if ($dir == 0) {
-        $which eq "S" ? $ci += 2 : $ci++;
+        $which eq "S" ? $ci += $step : $ci++;
     } elsif ($dir == 1) {
-        $which eq "S" ? $cj -= 2 : $cj--;
+        $which eq "S" ? $cj -= $step : $cj--;
     } elsif ($dir == 2) {
-        $which eq "S" ? $ci -= 2 : $ci--;
+        $which eq "S" ? $ci -= $step : $ci--;
     } elsif ($dir == 3) {
-        $which eq "S" ? $cj += 2 : $cj++;
+        $which eq "S" ? $cj += $step : $cj++;
     } elsif ($dir == 4) {
         $cj++; $ci++;
     } elsif ($dir == 5) {
@@ -316,6 +410,7 @@ sub help {
     print "--slow\t\t\tRun the simulation with slow speed. Very slow.\n";
     print "--fast\t\t\tRun the simulation with fast speed. Almost real-time!\n";
     print "--fastest\t\tRun the simulation at fastest speed.\n";
+    die "\n";
 }
 
 sub interrupt {
@@ -339,7 +434,7 @@ sub infected {
         my $dir = int(rand(4));
         ($ci, $cj) = sdir($ci, $cj, $dir, 0);
         if (defined($grid[$ci][$cj])) {
-            if ($grid[$ci][$cj] eq "O" and $chance >= 93) {
+            if ($grid[$ci][$cj] eq "O" and $chance >= 98) {
                 #citizen becomes infected
                 $grid[$ci][$cj] = "I";
                 $infected++; $citizens--;
@@ -402,7 +497,7 @@ sub infected {
                 }
              } elsif ($grid[$ci][$cj] eq "S") {
                 my $schance = int(rand(101));
-                if ($schance > 55) {
+                if ($schance < 10) {
                     $dead++; $soldiers--;
                     $grid[$ci][$cj] = "X";
                     $count = 0; 
@@ -430,21 +525,16 @@ sub doctors {
          #Our medics don't do anything for these doomed souls/saviors
          if ($let =~ /[XDSNWAF ]/) { return; }
                                                                       
-         if ($which eq "N" and $doctor <= 3 and $let eq "I") {
+         if ($which eq "N" and $doctor < 4 and $let eq "I") {
              $infected--; $nurses++;
              $grid[$ci][$cj] = "N";
              $count = 0;
-         } elsif ($which eq "D" and $doctor <= 7) {
-             if ($let eq "I") { 
-                 $infected--; $nurses++;
-                 $grid[$ci][$cj] = "N";
-                 $count = 0;
-             }
+         } elsif ($which eq "D" and $doctor < 6) {
              if ($let eq "O") {
                  $citizens--; $nurses++;
                  $grid[$ci][$cj] = "N";
              }
-         } elsif ($doctor <= 17) {
+         } elsif ($which eq "D" and $doctor < 54) {
              if ($let eq "I") {
                  $infected--; $citizens++;
                  $grid[$ci][$cj] = "O";
@@ -459,7 +549,7 @@ sub citizens {
     my $dir = int(rand(4));
     ($ci, $cj) = sdir($ci, $cj, $dir, 0);
 
-    my $cchance = int(rand(1001));
+    my $cchance = int(rand(10001));
     #0.1% chance of becoming a doctor or catching airborne infection
     if ($cchance == 0) {
         $grid[$i][$j] = "D";
@@ -480,13 +570,16 @@ sub citizens {
     if ($chance > 1 and $chance <= 16) {
         #Can we build here? Do we have enough resources?
         #Has enough time passed to take up carpentry?
+        #Is there more than one open space on the map?
         if (defined($grid[$ci][$cj])) {
             if ($grid[$ci][$cj] eq " ") {
                 if ($wood >= 25) {
                     if ($days >= 100) {
-                        $grid[$ci][$cj] = "W";
-                        $wood -= int(rand(24))+1;
-                        $walls++;
+                        if ($open > 1) {
+                            $grid[$ci][$cj] = "W";
+                            $wood -= int(rand(24))+1;
+                            $walls++; $open--;
+                        }
                     }
                 }
             }
@@ -562,20 +655,23 @@ sub soldiers {
                         $nurses--;
                     }
                 }
-            #We train our soldiers to kill, then clean up that mess
-            } elsif ($grid[$ci][$cj] eq "X") {
-                $grid[$ci][$cj] = " ";
             }
-        }
+        } elsif ($chance <= 74) {
+            if ($grid[$ci][$cj] eq "X") {
+                $grid[$ci][$cj] = " ";
+                $open++;
+            } elsif ($grid[$ci][$cj] eq "F") {
+                $grid[$ci][$cj] = "W";
+            }
+        }        
     }
 }
 
 sub angels {
     my ($chance, $doctor, $i, $j, $ci, $cj) = @_;
-
     if ($days % 700 == 0) {
         $grid[$i][$j] = " ";
-        $angels--;
+        $angels--; $open++;
     }
     if ($chance > 75) {
         if ($days % 200 == 0) {
