@@ -23,6 +23,7 @@ A game built by /g/, for /g/
 - Unit display SEEMS to be working properly now... Shouldn't have any more negative values.
 - Soldiers now only have a 10% chance to be killed by the infected
 - Soldiers now have a 75% chance to put out fire, which still does nothing
+- Iteration and unit-calls moved to their own function
 
 ### 16/8/2014
 ###### [Status: Outdated]
