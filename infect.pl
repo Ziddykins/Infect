@@ -348,7 +348,7 @@ sub printmap {
     if (!$_[0]) {
         my $healthy = $doctors + $nurses + $citizens + $soldiers;
         my $str = "Day: $days - Infected: $infected - Citizens: $citizens" .
-                  " - Healthy: ($healthy/" . ($total - $t_init) . ") empty: $open";
+                  " - Healthy: ($healthy/" . ($total - $t_init) . ");
         print $str;
         print "=" x (($ysize - length($days)) - length($str) + 2)  . "\r";
     }
